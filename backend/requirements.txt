@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+pillow
+torch
+transformers
+google-generativeai
+pyttsx3
+opencv-python
+python-multipart
