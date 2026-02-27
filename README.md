@@ -185,6 +185,3 @@ See `SETUP.md` for installation instructions.
 - Gemini free tier has rate limits (~2-3 requests per minute)
 - pyttsx3 voice is system-default (no voice selection currently)
 
-## License
-
-Open source - use freely for personal/commercial projects
