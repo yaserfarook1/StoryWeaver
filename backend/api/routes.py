@@ -3,7 +3,7 @@ API routes for Image-to-Voice converter
 """
 import time
 import os
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query
 from fastapi.responses import FileResponse
 from core.models import (
     ImageAnalysisResponse,
@@ -27,7 +27,7 @@ router = APIRouter(prefix="/api", tags=["processing"])
 
 # ============ Image Analysis ============
 @router.post("/analyze/image", response_model=ImageAnalysisResponse)
-async def analyze_image(file: UploadFile = File(...)):
+async def analyze_image(file: UploadFile = File(...), language: str = Query("english", description="Language for story and audio")):
     """Analyze an image and generate description, story, and audio"""
     start_time = time.time()
 
@@ -54,13 +54,13 @@ async def analyze_image(file: UploadFile = File(...)):
             image_analyzer = get_image_analyzer()
             description = image_analyzer.analyze(temp_path)
 
-            # Generate story
+            # Generate story in specified language
             story_generator = get_story_generator()
-            story = story_generator.generate(description)
+            story = story_generator.generate(description, language=language)
 
-            # Generate audio
+            # Generate audio in specified language
             audio_generator = get_audio_generator()
-            audio_path = audio_generator.generate(story)
+            audio_path = audio_generator.generate(story, language=language)
 
             processing_time = time.time() - start_time
 
@@ -68,7 +68,8 @@ async def analyze_image(file: UploadFile = File(...)):
                 status="success",
                 description=description,
                 story=story,
-                audio_url=f"/api/audio/{os.path.basename(audio_path)}",
+                audio_url=f"/api/audio/{os.path.basename(audio_path)}" if audio_path else None,
+                language=language,
                 processing_time=round(processing_time, 2),
             )
 
@@ -89,7 +90,7 @@ async def analyze_image(file: UploadFile = File(...)):
 
 # ============ Video Analysis ============
 @router.post("/analyze/video", response_model=VideoAnalysisResponse)
-async def analyze_video(file: UploadFile = File(...)):
+async def analyze_video(file: UploadFile = File(...), language: str = Query("english", description="Language for story and audio")):
     """Analyze a video and generate description, story, and audio"""
     start_time = time.time()
 
@@ -116,13 +117,13 @@ async def analyze_video(file: UploadFile = File(...)):
             video_analyzer = get_video_analyzer()
             description = video_analyzer.analyze(temp_path)
 
-            # Generate story
+            # Generate story in specified language
             story_generator = get_story_generator()
-            story = story_generator.generate(description)
+            story = story_generator.generate(description, language=language)
 
-            # Generate audio
+            # Generate audio in specified language
             audio_generator = get_audio_generator()
-            audio_path = audio_generator.generate(story)
+            audio_path = audio_generator.generate(story, language=language)
 
             processing_time = time.time() - start_time
 
@@ -130,7 +131,8 @@ async def analyze_video(file: UploadFile = File(...)):
                 status="success",
                 description=description,
                 story=story,
-                audio_url=f"/api/audio/{os.path.basename(audio_path)}",
+                audio_url=f"/api/audio/{os.path.basename(audio_path)}" if audio_path else None,
+                language=language,
                 processing_time=round(processing_time, 2),
             )
 
@@ -152,18 +154,19 @@ async def analyze_video(file: UploadFile = File(...)):
 # ============ Story Generation ============
 @router.post("/generate/story", response_model=StoryGenerationResponse)
 async def generate_story(request: StoryGenerationRequest):
-    """Generate a story from text"""
+    """Generate a story from text in specified language"""
     start_time = time.time()
 
     try:
         story_generator = get_story_generator()
-        story = story_generator.generate(request.text)
+        story = story_generator.generate(request.text, language=request.language)
 
         processing_time = time.time() - start_time
 
         return StoryGenerationResponse(
             status="success",
             story=story,
+            language=request.language,
             processing_time=round(processing_time, 2),
         )
 
@@ -174,18 +177,19 @@ async def generate_story(request: StoryGenerationRequest):
 # ============ Audio Generation ============
 @router.post("/generate/audio", response_model=AudioGenerationResponse)
 async def generate_audio(request: AudioGenerationRequest):
-    """Generate audio from text"""
+    """Generate audio from text in specified language"""
     start_time = time.time()
 
     try:
         audio_generator = get_audio_generator()
-        audio_path = audio_generator.generate(request.text)
+        audio_path = audio_generator.generate(request.text, language=request.language)
 
         processing_time = time.time() - start_time
 
         return AudioGenerationResponse(
             status="success",
-            audio_url=f"/api/audio/{os.path.basename(audio_path)}",
+            audio_url=f"/api/audio/{os.path.basename(audio_path)}" if audio_path else None,
+            language=request.language,
             processing_time=round(processing_time, 2),
         )
 

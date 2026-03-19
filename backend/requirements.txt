@@ -4,8 +4,9 @@ pydantic
 python-dotenv
 pillow
 torch
+torchaudio
 transformers
 google-generativeai
-pyttsx3
+gtts
 opencv-python
 python-multipart

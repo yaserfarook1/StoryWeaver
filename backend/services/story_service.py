@@ -12,18 +12,19 @@ genai.configure(api_key=GEMINI_API_KEY)
 class StoryGenerator:
     """Generates stories using Google Gemini API"""
 
-    def generate(self, scenario: str) -> str:
+    def generate(self, scenario: str, language: str = "english") -> str:
         """
-        Generate a short story from a scenario/description
+        Generate a short story from a scenario/description in specified language
 
         :param scenario: Input text/scenario
-        :return: Generated story (max 50 words)
+        :param language: Language for the story (english, tamil, malayalam, hindi)
+        :return: Generated story
         """
         try:
-            print(f"Generating story from: {scenario[:100]}...")
+            print(f"Generating story from: {scenario[:100]}... in {language}")
 
             prompt_template: str = f"""You are a talented story teller who can create a story from a simple narrative.
-Create a story using the following scenario; the story should be maximum 50 words long:
+Create a story using the following scenario in {language}; the story should be maximum 50 words long:
 
 CONTEXT: {scenario}
 STORY:"""
@@ -32,7 +33,7 @@ STORY:"""
             response: Any = model.generate_content(prompt_template)
             generated_story: str = response.text.strip()
 
-            print(f"Story generated: {generated_story[:100]}...")
+            print(f"Story generated in {language}: {generated_story[:100]}...")
             return generated_story
 
         except Exception as e:

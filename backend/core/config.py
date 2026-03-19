@@ -24,7 +24,21 @@ AUDIO_OUTPUT_DIR = "generated_audio"
 
 # Model Settings
 BLIP_MODEL_NAME = "Salesforce/blip-image-captioning-base"
+LLAVA_MODEL_NAME = "llava-hf/llava-1.5-7b-hf"
+LLAVA_QUANTIZATION = "4bit"  # 4-bit quantization reduces model size to ~8GB
 GEMINI_MODEL_NAME = "gemini-2.5-flash"
+
+# Language Settings
+SUPPORTED_LANGUAGES = ["english", "tamil", "malayalam", "hindi"]
+DEFAULT_LANGUAGE = "english"
+
+# Language to Coqui TTS Model Mapping
+LANGUAGE_TO_TTS_MODEL = {
+    "english": "tts_models/en/ljspeech/tacotron2-DDC",
+    "tamil": "tts_models/ta/mozilla/tacotron2-DDC",
+    "malayalam": "tts_models/ml/mozilla/tacotron2-DDC",
+    "hindi": "tts_models/hi/mozilla/tacotron2-DDC",
+}
 
 # Video Settings
 VIDEO_FRAME_COUNT = 5

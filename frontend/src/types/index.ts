@@ -3,6 +3,7 @@ export interface AnalysisResult {
   description: string;
   story: string;
   audio_url?: string;
+  language: string;
   processing_time: number;
 }
 

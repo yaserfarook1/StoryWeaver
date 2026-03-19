@@ -24,12 +24,12 @@ export const api = {
   },
 
   // Analyze image
-  async analyzeImage(file: File): Promise<AnalysisResult> {
+  async analyzeImage(file: File, language: string = "english"): Promise<AnalysisResult> {
     const formData = new FormData();
     formData.append("file", file);
 
     const response = await apiClient.post<AnalysisResult>(
-      "/api/analyze/image",
+      `/api/analyze/image?language=${language}`,
       formData,
       {
         headers: {
@@ -42,12 +42,12 @@ export const api = {
   },
 
   // Analyze video
-  async analyzeVideo(file: File): Promise<AnalysisResult> {
+  async analyzeVideo(file: File, language: string = "english"): Promise<AnalysisResult> {
     const formData = new FormData();
     formData.append("file", file);
 
     const response = await apiClient.post<AnalysisResult>(
-      "/api/analyze/video",
+      `/api/analyze/video?language=${language}`,
       formData,
       {
         headers: {
@@ -60,18 +60,20 @@ export const api = {
   },
 
   // Generate story
-  async generateStory(text: string): Promise<{ story: string }> {
+  async generateStory(text: string, language: string = "english"): Promise<{ story: string; language: string }> {
     const response = await apiClient.post("/api/generate/story", {
       text,
+      language,
     });
 
     return response.data;
   },
 
   // Generate audio
-  async generateAudio(text: string): Promise<{ audio_url: string }> {
+  async generateAudio(text: string, language: string = "english"): Promise<{ audio_url: string; language: string }> {
     const response = await apiClient.post("/api/generate/audio", {
       text,
+      language,
     });
 
     return response.data;

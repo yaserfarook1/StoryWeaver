@@ -13,7 +13,19 @@ import api from "@/utils/api";
 export default function App() {
   const [samples, setSamples] = useState<Sample[]>([]);
   const [selectedSample, setSelectedSample] = useState<Sample | null>(null);
+  const [language, setLanguage] = useState<string>("english");
   const { isLoading, result, analyzeFile, reset } = useApi();
+
+  useEffect(() => {
+    // Load language preference from localStorage
+    const savedLanguage = localStorage.getItem("storyweaver-language") || "english";
+    setLanguage(savedLanguage);
+  }, []);
+
+  useEffect(() => {
+    // Save language preference to localStorage
+    localStorage.setItem("storyweaver-language", language);
+  }, [language]);
 
   useEffect(() => {
     const loadSamples = async () => {
@@ -30,7 +42,7 @@ export default function App() {
   };
 
   const handleUploadComplete = async (file: File) => {
-    const result = await analyzeFile(file);
+    const result = await analyzeFile(file, language);
     if (result) {
       setSelectedSample(null);
     }
@@ -38,7 +50,7 @@ export default function App() {
 
   return (
     <main className="min-h-screen bg-gradient-dark">
-      <Navbar />
+      <Navbar language={language} onLanguageChange={setLanguage} />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {!result ? (

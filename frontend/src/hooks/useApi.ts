@@ -16,7 +16,7 @@ const initialState: ProcessingState = {
 export function useApi() {
   const [state, setState] = useState<ProcessingState>(initialState);
 
-  const analyzeFile = useCallback(async (file: File) => {
+  const analyzeFile = useCallback(async (file: File, language: string = "english") => {
     setState({ ...initialState, isLoading: true });
 
     try {
@@ -24,10 +24,10 @@ export function useApi() {
 
       if (api.isImage(file.name)) {
         setState((prev) => ({ ...prev, progress: 10 }));
-        result = await api.analyzeImage(file);
+        result = await api.analyzeImage(file, language);
       } else if (api.isVideo(file.name)) {
         setState((prev) => ({ ...prev, progress: 10 }));
-        result = await api.analyzeVideo(file);
+        result = await api.analyzeVideo(file, language);
       } else {
         throw new Error("Unsupported file type");
       }

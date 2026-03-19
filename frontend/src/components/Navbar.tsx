@@ -4,11 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function Navbar() {
+interface NavbarProps {
+  language?: string;
+  onLanguageChange?: (language: string) => void;
+}
+
+const LANGUAGES = [
+  { code: "english", label: "English" },
+  { code: "tamil", label: "Tamil" },
+  { code: "malayalam", label: "Malayalam" },
+  { code: "hindi", label: "Hindi" },
+];
+
+export default function Navbar({ language = "english", onLanguageChange }: NavbarProps) {
   const pathname = usePathname();
   const isApp = pathname.startsWith("/app");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -84,11 +97,54 @@ export default function Navbar() {
               </a>
             </div>
 
-            {/* Status indicator and Theme Toggle */}
+            {/* Status indicator, Language Selector and Theme Toggle */}
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 text-sm" style={{ color: "var(--text-tertiary)" }}>
                 <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "var(--accent)" }}></span>
                 <span>Ready</span>
+              </div>
+
+              {/* Language Selector */}
+              <div className="relative group">
+                <button
+                  onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+                  className="px-3 py-2 rounded-lg transition-all duration-300 hover:opacity-80 text-sm font-medium"
+                  style={{
+                    background: "var(--glass-bg)",
+                    border: "1px solid var(--glass-border)",
+                  }}
+                  title="Select language"
+                >
+                  🌐 {LANGUAGES.find(l => l.code === language)?.label || "English"}
+                </button>
+
+                {showLanguageMenu && (
+                  <div
+                    className="absolute right-0 mt-2 w-40 rounded-lg shadow-lg z-10"
+                    style={{
+                      background: "var(--glass-bg)",
+                      border: "1px solid var(--glass-border)",
+                    }}
+                  >
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          onLanguageChange?.(lang.code);
+                          setShowLanguageMenu(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          language === lang.code ? "font-semibold" : ""
+                        }`}
+                        style={{
+                          color: language === lang.code ? "var(--accent)" : "var(--text-secondary)",
+                        }}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Theme Toggle Button */}
