@@ -11,7 +11,6 @@ export default function AudioPlayer({ src }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -132,7 +131,7 @@ export default function AudioPlayer({ src }: AudioPlayerProps) {
           }}
           title="Toggle volume"
         >
-          <span className="text-lg">{volume === 0 ? "🔇" : "🔊"}</span>
+          <span className="text-lg">{audioRef.current?.volume === 0 ? "🔇" : "🔊"}</span>
         </button>
 
         {/* Menu Button */}

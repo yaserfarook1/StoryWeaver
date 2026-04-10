@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useRef, DragEvent, ChangeEvent } from "react";
-import { useApi } from "@/hooks/useApi";
-import LoadingSpinner from "./LoadingSpinner";
 import ProcessingProgress from "./ProcessingProgress";
+import CameraCapture from "./CameraCapture";
 import toast from "react-hot-toast";
 
 interface UploadZoneProps {
@@ -15,11 +14,11 @@ export default function UploadZone({
   isLoading,
   onUploadComplete,
 }: UploadZoneProps) {
+  const [mode, setMode] = useState<"upload" | "camera">("upload");
   const [isDragging, setIsDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { analyzeFile } = useApi();
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -98,8 +97,47 @@ export default function UploadZone({
     fileInputRef.current?.click();
   };
 
+  if (mode === "camera") {
+    return (
+      <CameraCapture
+        isLoading={isLoading}
+        onCapture={handleFile}
+        onCancel={() => setMode("upload")}
+      />
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-4">
+      {/* Mode Toggle */}
+      <div className="flex gap-2 justify-center">
+        <button
+          onClick={() => setMode("upload")}
+          className="px-4 py-2 rounded-lg font-semibold transition-all"
+          style={{
+            background: mode === "upload" ? "var(--accent)" : "transparent",
+            color: mode === "upload" ? "white" : "var(--text-primary)",
+            border: mode === "upload" ? "none" : "1px solid var(--border)",
+            cursor: "pointer",
+          }}
+        >
+          📤 Upload
+        </button>
+        <button
+          onClick={() => setMode("camera")}
+          className="px-4 py-2 rounded-lg font-semibold transition-all"
+          style={{
+            background: "transparent",
+            color: "var(--text-primary)",
+            border: "1px solid var(--border)",
+            cursor: "pointer",
+          }}
+        >
+          📷 Camera
+        </button>
+      </div>
+
+      {/* Upload Zone */}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
