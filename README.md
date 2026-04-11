@@ -18,10 +18,15 @@
 - 🇮🇳 Hindi
 - All stories and audio generated in selected language
 
+📷 **Live Camera Capture**
+- Real-time webcam/device camera access
+- Capture photos or record videos directly from your device
+- Alternative to file upload for instant storytelling
+
 🎯 **Detailed Image Analysis**
-- 2-line simple, factual descriptions
-- Uses BLIP for visual understanding + Gemini for enhancement
-- For videos: Analyzes 5 key frames and synthesizes descriptions
+- 3-5 sentence elaborate descriptions with multiple visual details
+- Uses LLaVA (7B, 4-bit quantized) for deep visual understanding
+- For videos: Analyzes 5 key frames and synthesizes comprehensive descriptions
 
 🎬 **Story Generation**
 - Google Gemini creates engaging 50-word stories
@@ -42,7 +47,7 @@
 
 ### Pipeline
 ```
-Image/Video Upload
+Image/Video Upload OR Live Camera Capture
     ↓
 Select Language (English, Tamil, Malayalam, Hindi)
     ↓
@@ -62,20 +67,21 @@ Play Audio & Download
 ### Backend (FastAPI + Python 3.13)
 
 **Vision & Language Models:**
-- **BLIP (Salesforce/blip-image-captioning-base)** - Image/Video analysis
-  - Fast, lightweight (~1GB), free, excellent visual understanding
-  - For images: Generates initial caption
-  - For videos: Analyzes 5 key frames, combines into coherent description
+- **LLaVA 1.5 (7B, 4-bit Quantized)** - Detailed Image/Video analysis
+  - Quantized to 4-bit using BitsAndBytes for memory efficiency (~8GB VRAM)
+  - Generates 3-5 sentence elaborate descriptions with multiple details
+  - For images: Direct analysis with conversational prompts
+  - For videos: Analyzes 5 key frames, synthesizes into coherent description
 
-- **Google Gemini 2.5 Flash** - Story & description enhancement
+- **Google Gemini 2.5 Flash** - Story generation
   - Fast, free tier, multilingual support
-  - Enhances BLIP captions to 2-line descriptions
   - Generates 50-word stories in 4 languages
+  - Context-aware, language-specific narratives
 
-- **gTTS (Google Text-to-Speech)** - Multilingual audio
+- **Coqui TTS** - Multilingual audio
   - Supports 4 languages: English, Tamil, Malayalam, Hindi
-  - Natural-sounding voices with proper prosody
-  - MP3 format, high quality
+  - Using Tacotron2-DDC models for each language
+  - Natural-sounding voices, .wav format, high quality
 
 ### Frontend (Next.js 14 + React + TypeScript)
 
@@ -118,12 +124,13 @@ StoryWeaver/
 │   │   │   └── globals.css              # Global styles, theme CSS variables
 │   │   │
 │   │   ├── components/
-│   │   │   ├── Navbar.tsx               # Navigation + Language Selector Dropdown ⭐ NEW
+│   │   │   ├── Navbar.tsx               # Navigation + Language Selector Dropdown ⭐ UPDATED
 │   │   │   ├── Hero.tsx                 # App hero section
-│   │   │   ├── UploadZone.tsx           # Drag-and-drop file upload
+│   │   │   ├── UploadZone.tsx           # Drag-and-drop file upload + camera toggle ⭐ UPDATED
+│   │   │   ├── CameraCapture.tsx        # Live webcam capture component ⭐ NEW
 │   │   │   ├── SampleGrid.tsx           # Sample images/videos
 │   │   │   ├── Results.tsx              # Display description, story, audio player
-│   │   │   ├── AudioPlayer.tsx          # Custom audio player
+│   │   │   ├── AudioPlayer.tsx          # Custom audio player ⭐ UPDATED
 │   │   │   └── LoadingSpinner.tsx       # Loading state
 │   │   │
 │   │   ├── hooks/
@@ -166,11 +173,11 @@ Content-Type: multipart/form-data
 Request: file (JPG, PNG)
 Response: {
   status: "success",
-  description: "2-line description",
+  description: "3-5 sentence detailed description with multiple visual details",
   story: "50-word story in selected language",
-  audio_url: "/api/audio/audio_english_xxxxx.mp3",
+  audio_url: "/api/audio/audio_english_xxxxx.wav",
   language: "english",
-  processing_time: 8.5
+  processing_time: 12.5
 }
 ```
 
@@ -182,11 +189,11 @@ Content-Type: multipart/form-data
 Request: file (MP4, WebM)
 Response: {
   status: "success",
-  description: "Description from 5 frames analysis",
+  description: "Comprehensive description synthesized from 5 frames analysis",
   story: "50-word story in Tamil",
-  audio_url: "/api/audio/audio_tamil_xxxxx.mp3",
+  audio_url: "/api/audio/audio_tamil_xxxxx.wav",
   language: "tamil",
-  processing_time: 12.3
+  processing_time: 22.3
 }
 ```
 
@@ -252,15 +259,16 @@ Response: Binary file data
 
 | Model | Purpose | Why This One | Alternatives | Trade-off |
 |-------|---------|-------------|--------------|-----------|
-| **BLIP** | Image analysis | Fast, lightweight (1GB), free, accurate | LLaVA, BLIP-2 | LLaVA needs more VRAM, BLIP-2 is 15GB |
-| **Gemini 2.5 Flash** | Story & enhancement | Fast, free tier, multilingual, excellent quality | GPT-4, Claude API | Local models slower, less capable |
-| **gTTS** | Multilingual audio | Supports 4 languages, natural voices, free | Coqui TTS | Coqui requires Python <3.12 |
+| **LLaVA 1.5 (7B, 4-bit)** | Detailed image analysis | Better description quality, quantized for efficiency | BLIP (simpler), BLIP-2 (15GB), GPT-4V (paid) | 8GB VRAM, longer inference time than BLIP |
+| **Gemini 2.5 Flash** | Story generation | Fast, free tier, multilingual, excellent quality | GPT-4, Claude API, local models | Free tier has rate limits, requires internet |
+| **Coqui TTS** | Multilingual audio | Offline, supports 4 languages, natural voices | gTTS (cloud), ElevenLabs (paid), Azure TTS | Slower than gTTS, larger model files |
 
 ## Requirements
 
 ### Backend
 - Python 3.13
-- 8GB RAM minimum (16GB recommended for BLIP model download)
+- 16GB RAM minimum (for LLaVA 7B 4-bit quantized model)
+- 50GB disk space (for model caches: LLaVA ~8GB + Coqui TTS models ~3-5GB per language)
 - GEMINI_API_KEY (free tier at https://makersuite.google.com/app/apikey)
 
 ### Frontend
@@ -296,7 +304,7 @@ Response: Binary file data
    # Get free key at: https://makersuite.google.com/app/apikey
    echo GEMINI_API_KEY=your_key_here > .env
 
-   # Start backend (will download BLIP model on first run ~1GB)
+   # Start backend (will download LLaVA ~8GB and Coqui TTS models on first run)
    python main.py
    ```
    Backend runs on: http://localhost:8000
@@ -333,14 +341,16 @@ Get your free Gemini API key: https://makersuite.google.com/app/apikey
 
 | Operation | Time | Notes |
 |-----------|------|-------|
-| Image analysis (description) | 2-3s | BLIP caption + Gemini enhancement |
+| Image analysis (description) | 5-8s | LLaVA 7B 4-bit analysis |
 | Story generation | 2-3s | Gemini API call, ~50 words |
-| Audio generation | 1-2s | gTTS API call, depends on text length |
-| **Total (image)** | **6-8s** | Per uploaded image |
-| **Total (video)** | **10-12s** | 5 frames extracted + analyzed |
+| Audio generation | 3-5s | Coqui TTS generation, depends on text length |
+| **Total (image)** | **10-15s** | Per uploaded image |
+| **Total (video)** | **20-25s** | 5 frames extracted + analyzed |
 
-First run may take longer due to model downloads:
-- BLIP model: ~1GB (one-time download, cached)
+**⚠️ First run takes significantly longer due to model downloads:**
+- LLaVA model: ~8GB (one-time download, cached)
+- Coqui TTS models: ~3-5GB per language (one-time download, cached)
+- Total first run: 40-60 minutes depending on internet speed
 
 ## Supported Languages
 
@@ -378,7 +388,7 @@ GEMINI_API_KEY=your_key_here
 Get free key at: https://makersuite.google.com/app/apikey
 
 ### Issue: Model download stuck
-**Solution:** The BLIP model (~1GB) downloads on first run. Check your internet connection. It's cached after first download.
+**Solution:** LLaVA (~8GB) and Coqui TTS models (~3-5GB per language) download on first run. This may take 40-60 minutes depending on internet speed. Check your internet connection. Models are cached after first download.
 
 ### Issue: Audio not playing
 **Solution:**
